@@ -1,0 +1,313 @@
+👓 OptiVision — Plataforma de Venta de Lentes en Línea
+
+Next.js · Supabase · Tailwind · Vercel · Raya · Estado
+
+Plataforma e-commerce fullstack para venta de armazones y lentes ópticos en Guatemala.
+Catálogo con filtros, agendamiento de citas, pagos con Neonet y Credomatic, y probador virtual con inteligencia artificial.
+
+Ver demostración
+ · Reportar error
+ · Solicitar función
+
+📋 Tabla de Contenidos
+
+Sobre el Proyecto
+
+Funcionalidades
+
+Pila tecnológica
+
+Arquitectura
+
+Base de datos
+
+Pasarela de Pago
+
+Probador Virtual
+
+Instalación
+
+Variables de Entorno
+
+Estructura del Proyecto
+
+Flujo de Usuario
+
+Hoja de Ruta
+
+Autor
+
+🔭 Sobre el Proyecto
+
+OptiVision es una plataforma de comercio electrónico especializada en venta de armazones y lentes ópticos. Combina una experiencia de compra moderna con funcionalidades únicas como:
+
+Probador virtual de lentes usando IA
+
+Agendamiento de citas para exámenes visuales
+
+Integración con pasarelas de pago locales (Neonet y Credomatic)
+
+Objetivo: Resolver la falta de presencia digital de ópticas en Guatemala, permitiendo explorar catálogos grandes, probar lentes virtualmente y pagar en línea de manera segura.
+
+✨ Funcionalidades
+Módulo de Catálogo
+
+Filtros: estilo, material, género, marca, rango de precio
+
+Vista grid / lista
+
+Scroll infinito
+
+Búsqueda en tiempo real
+
+Módulo de Producto
+
+Galería de imágenes múltiples
+
+Selector de color con vista previa
+
+Probador virtual (cámara o foto)
+
+Productos relacionados
+
+Módulo Carrito y Checkout
+
+Carrito persistente (localStorage + DB)
+
+Aplicación de cupones de descuento
+
+Resumen con IVA 12%
+
+Checkout en un solo paso
+
+Módulo de Pagos
+
+Integración Neonet y Credomatic
+
+Webhooks para confirmar pagos
+
+Manejo de estados: pendiente / aprobado / rechazado / error
+
+Módulo de Citas
+
+Calendario interactivo con disponibilidad real
+
+Selección de sucursal con mapa
+
+Confirmación por email
+
+Recordatorio 24h antes por WhatsApp (Twilio)
+
+Módulo de Cuenta
+
+Historial de pedidos y citas
+
+Gestión de datos personales
+
+Autenticación con correo o Google (Supabase Auth)
+
+🛠️ Pila tecnológica
+Área	Tecnología	Uso
+Frontend	Next.js 14	SSR, rutas dinámicas, React Server Components
+	React 18	Componentes UI
+	Tailwind CSS 3.4	Estilos y diseño responsivo
+	Framer Motion 11	Animaciones y transiciones
+	Zustand 4	Estado global (carrito)
+Backend / API	Next.js API Routes	Pagos, webhooks, citas, productos
+	Supabase	PostgreSQL, Auth, Storage
+	Twilio	Recordatorios WhatsApp
+	Resend	Emails transaccionales
+Pagos	Credomatic / VisaNet	Tarjetas de Guatemala
+	Neonet	Pasarela local
+	Raya	Pagos internacionales (backup)
+Probador Virtual	MediaPipe Face Mesh	Detección facial en tiempo real
+	TensorFlow.js	Modelos IA en navegador
+	face-api.js	Detección facial en foto estática
+	Canvas API	Renderizado de lentes sobre rostro
+DevOps / Hosting	Vercel	Frontend, CI/CD automático
+	Supabase	DB y storage
+	GitHub Actions	CI/CD pipeline
+🏗 Arquitectura
+CLIENTE (Browser)
+Next.js · Tailwind · Zustand
+        │ HTTPS
+        ▼
+VERCEL (Edge Network)
+  ┌───────────────┐    ┌─────────────────┐
+  │  App Router   │    │  API Routes      │
+  │  / /catalogo  │    │ /api/payment     │
+  │  /producto    │    │ /api/webhooks    │
+  │  /carrito     │    │ /api/appointments│
+  │  /checkout    │    │ /api/products    │
+  │  /citas       │    └─────────────────┘
+  └───────────────┘
+        │
+SUPABASE (PostgreSQL, Auth, Storage)
+        │
+Pagos: Credomatic / Neonet
+Servicios externos: Resend, Twilio, Google Maps
+🗄️ Base de Datos
+
+Tablas principales:
+
+users
+
+categories
+
+products
+
+appointments
+
+orders
+
+order_items
+
+coupons
+
+Relaciones:
+
+users ── orders ── order_items ── products
+      └─ appointments
+products ── categories
+
+(Cada producto tiene imágenes y colores en JSONB, y un PNG de armazón para probador virtual)
+
+💳 Pasarela de Pago
+
+Flujo general:
+
+Usuario confirma pedido → /api/payment/create
+
+Servidor genera referencia OV-{orderId}-{timestamp}
+
+Redirige a portal del banco (Credomatic / Neonet)
+
+Webhook /api/webhooks/payment confirma el estado:
+
+paid: stock descontado, email enviado
+
+payment_failed: usuario notificado
+
+🔑 La confirmación del webhook es la fuente de verdad.
+
+🕶️ Probador Virtual
+
+Funcionamiento:
+
+Detecta 468 puntos del rostro con MediaPipe Face Mesh
+
+Calcula posición, tamaño e inclinación de lentes PNG
+
+Renderiza en Canvas API cada frame
+
+Modos:
+
+📷 Cámara en vivo — 30fps
+
+🖼️ Subir foto — detección facial offline
+
+Requisito: Cada producto debe tener try_on_image.png fondo transparente.
+
+🚀 Instalación
+
+Requisitos:
+
+Node.js 18+
+
+npm / yarn
+
+Cuenta en Supabase
+
+Cuenta en Vercel
+
+Pasos:
+
+# 1. Clonar repositorio
+git clone https://github.com/eddisonjl/optivision.git
+cd optivision
+
+# 2. Instalar dependencias
+npm install
+
+# 3. Configurar variables de entorno
+cp .env.example .env.local
+# Editar .env.local con tus credenciales
+
+# 4. Configurar base de datos
+# Ir a Supabase → SQL Editor → pegar /database/schema.sql
+
+# 5. Ejecutar en desarrollo
+npm run dev
+# Abrir en: http://localhost:3000
+🔐 Variables de Entorno
+
+Supabase: URL, ANON_KEY, SERVICE_ROLE_KEY
+
+Credomatic / Neonet: access_key, secret, merchant_id
+
+Emails: RESEND_API_KEY
+
+WhatsApp: TWILIO_ACCOUNT_SID, AUTH_TOKEN, FROM
+
+App: NEXT_PUBLIC_URL
+
+⚠️ Nunca subir .env.local a GitHub.
+
+📁 Estructura del Proyecto
+optivision/
+├── app/                  # Next.js App Router
+│   ├── (public)/         # Páginas principales
+│   ├── (auth)/           # Login y cuenta
+│   └── api/              # Rutas backend
+├── components/           # Componentes UI y funcionales
+├── lib/                  # Clientes y utilidades (Supabase, pagos, emails)
+├── store/                # Estado global (Zustand)
+├── database/             # Schema SQL
+├── public/glasses/       # PNGs para probador
+├── .env.example
+├── .gitignore
+├── next.config.js
+├── tailwind.config.js
+└── package.json
+🔄 Flujo de Usuario
+Compra:
+
+Home → Catálogo → Producto → Probador → Carrito → Checkout → Pago → Confirmación → Rastreo pedido
+
+Cita:
+
+NavBar "Agendar cita" → Selecciona sucursal → Fecha/Hora → Datos → Confirmación → WhatsApp 24h
+
+🔮 Hoja de Ruta
+
+Arquitectura y DB
+
+Diseño de flujos de usuario
+
+Integración pasarelas GT (Neonet + Credomatic)
+
+Probador virtual MediaPipe
+
+Frontend Next.js + Tailwind
+
+Supabase (DB + Storage)
+
+Módulo citas con calendario
+
+Emails transaccionales (Resend)
+
+WhatsApp (Twilio)
+
+Deploy en Vercel
+
+Panel admin / App móvil (React Native)
+
+👨‍💻 Autor
+
+Eddison Jocol — Fullstack Developer · Guatemala 🇬🇹
+
+GitHub
+
+📄 Licencia
+
+MIT
